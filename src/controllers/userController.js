@@ -14,11 +14,18 @@ const login = async (req, res, next) => {
   try{
     const loged = await userModel.login(req.body)
 
-    res.status(200).json(loged)
+    
+
+    res.status(200).json({
+      status:true,
+      data:loged
+    })
   }catch(error){
     next(error)
   }
 }
+
+ 
 
 const userController = {
   register, login

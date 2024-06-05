@@ -10,9 +10,13 @@ const errorHandlingMiddleWare = (err, req, res, next) => {
 
   // Tạo ra một biến responseError để kiểm soát những gì muốn trả về
   const responseError = {
-    statusCode: err.statusCode,
+    status:false,
     message: err.message || StatusCodes[err.statusCode], // Nếu lỗi mà không có message thì lấy ReasonPhrases chuẩn theo mã Status Code
-    stack: err.stack
+    error:{
+      code:err.statusCode,
+      details:err.details
+    }
+    // stack: err.stack
   }
   // console.error(responseError)
 
@@ -24,7 +28,14 @@ const errorHandlingMiddleWare = (err, req, res, next) => {
   console.error(responseError)
 
   // Trả responseError về phía Front-end
-  res.status(responseError.statusCode).json(responseError)
+  res.status(responseError.error.code).json(responseError)
 }
 
 module.exports = errorHandlingMiddleWare
+
+
+
+
+
+
+

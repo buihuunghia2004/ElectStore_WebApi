@@ -27,7 +27,7 @@ const ARRAY_OBJECT = (item) => {
 //error
 const STATUS_CODE_ERROR_VALIDATION = 451
 
-const validatorConstant = {
+module.exports = {
   OBJECT_ID_RULE,
   OBJECT_ID_RULE_MESSAGE,
   PHONENUMBER,
@@ -42,5 +42,3 @@ const validatorConstant = {
   NUMBER,
   BOOLEAN
 }
-
-module.exports = validatorConstant

@@ -3,8 +3,10 @@ const mongoose = require('mongoose');
 const ApiError = require('../utils/ApiError');
 const { StatusCodes } = require('http-status-codes');
 const Schema = mongoose.Schema
-const ObjectId = Schema.ObjectId
-
+const ObjectId = Schema.Types.ObjectId
+var bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
+const environment = require('../config/environment')
 
 const UserSchema = new Schema({
   userName:{
@@ -19,6 +21,18 @@ const UserSchema = new Schema({
     type:String,
     required:true,
     min:6,
+  },
+  cart:{
+    type:[
+      {
+        productId:ObjectId,
+        productname:String,
+        price:Number,
+        image:String,
+        quantity:Number
+      }
+    ],
+    default:[]
   }
 })
 
@@ -36,7 +50,7 @@ const findUserByEmail = async (email) => {
 
 //login and register
 const register = async (data) => {
-  const {email} = data
+  const {email, password} = data
 
   //check user exist
   try {
@@ -50,26 +64,39 @@ const register = async (data) => {
     }
   }
 
+  bcrypt.genSalt(10,(err, salt) => {
+    bcrypt.hash(password, salt,async (err, hash) => {
+      data.password = hash
+      const user = new User(data)
+      await user.save()
+    })
+  })
   //create user
-  const user = new User(data)
-  await user.save()
 
-  return user
+  return {status:true}
 }
+
 const login = async (data) => {
   const {email, password} = data
 
   const user = await findUserByEmail(email)
 
-  if (user.password != password) {
+  if (!bcrypt.compareSync(password, user.password)) {
     throw new ApiError(405,'Wrong password')
   }
 
-  return true
-}
+  const token = jwt.sign({email:email},environment.SECRET_KEY,{expiresIn:'1y'})
+  const result = {...user._doc}
+  delete result.password
+  result.token = token
 
+  return result
+}
 const userModel = {
-  register, login
+  User,
+  register, login,
 }
 
 module.exports = userModel
+
+

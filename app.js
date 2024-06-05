@@ -3,13 +3,22 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+const cors = require('cors');
 
-var indexRouter = require('./src/routes/index');
-var usersRouter = require('./src/routes/userRouter');
-const { log, error } = require('console');
-const errorHandlingMiddleWare = require('./src/middlewares/errorHandlingMiddleWare')
+//database
+require('./src/config/mongodb');
 
-var mongodb = require('./src/config/mongodb');
+//router
+const usersRouter = require('./src/routes/userRouter');
+const productRouter = require('./src/routes/productRouter');
+
+//middleware
+const errorHandlingMiddleWare = require('./src/middlewares/errorHandlingMiddleWare');
+const categoryRouter = require('./src/routes/categoryRouter');
+const masterViewRouter = require('./src/routes/view/masterViewRouter');
+const viewRouter = require('./src/routes/view/viewRouter');
+const brandRouter = require('./src/routes/brandRouter');
+//const filterRouter = require('./src/client/filter/filterRouter');
 
 var app = express();
 
@@ -23,8 +32,15 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', indexRouter);
-app.use('/user', usersRouter);
+app.use(cors());
+
+//app.use('/user', usersRouter);
+app.use('/product', productRouter);
+app.use('/view',viewRouter)
+app.use('/category',categoryRouter)
+app.use('/masterView',masterViewRouter)
+app.use('/brand',brandRouter)
+//app.use('/filter',filterRouter)
 
 // middleware error handler
 app.use(errorHandlingMiddleWare)
@@ -38,15 +54,12 @@ app.use(function(req, res, next) {
 app.use(function(err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
+  res.locals.error = req.app.get('env') === 'development' ? err : {}
 
   // render the error page
   res.status(err.status || 500);
   res.render('error');
 });
 
-app.listen(8080,()=>{
-  console.log('ok');
-})
 
 module.exports = app;
